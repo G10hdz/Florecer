@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Clutter .md files
+AGENTS.md
+ROADMAP.md
+COMPONENTS.md
+API.md
+GAMIFICATION.md
+DATA_MODELS.md
+STACK.md
+
+# AI/memory directories
+.claude/
+.remember/
+memory/

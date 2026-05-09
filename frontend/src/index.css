@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  /* Custom color palette */
+  --base: #EDE0FF;        /* lavanda claro */
+  --primary: #B388E8;     /* lavanda medio (borahae-adjacent) */
+  --accent: #F0B8CE;      /* rosa polvoso */
+  --pop: #FF79B0;         /* pink para confetti/celebración */
+  --surface: #FFF9F0;     /* vainilla para cards */
+  --dark: #2D1B4E;        /* solo texto y bordes pixel */
+  
+  /* shadcn/ui semantic tokens */
+  --background: #FFF9F0;
+  --foreground: #2D1B4E;
+  --card: #FFF9F0;
+  --card-foreground: #2D1B4E;
+  --popover: #FFF9F0;
+  --popover-foreground: #2D1B4E;
+  --primary: #B388E8;
+  --primary-foreground: #ffffff;
+  --secondary: #EDE0FF;
+  --secondary-foreground: #2D1B4E;
+  --muted: #EDE0FF;
+  --muted-foreground: #6B5B7A;
+  --accent: #F0B8CE;
+  --accent-foreground: #2D1B4E;
+  --destructive: #FF79B0;
+  --destructive-foreground: #ffffff;
+  --border: #D4C4E8;
+  --input: #D4C4E8;
+  --ring: #B388E8;
+  --radius: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1A0F2E;
+    --foreground: #EDE0FF;
+    --card: #2D1B4E;
+    --card-foreground: #EDE0FF;
+    --popover: #2D1B4E;
+    --popover-foreground: #EDE0FF;
+    --primary: #B388E8;
+    --primary-foreground: #ffffff;
+    --secondary: #3D245E;
+    --secondary-foreground: #EDE0FF;
+    --muted: #3D245E;
+    --muted-foreground: #B388E8;
+    --accent: #F0B8CE;
+    --accent-foreground: #2D1B4E;
+    --destructive: #FF79B0;
+    --destructive-foreground: #ffffff;
+    --border: #3D245E;
+    --input: #3D245E;
+    --ring: #B388E8;
+  }
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: linear-gradient(135deg, var(--base) 0%, var(--surface) 100%);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
