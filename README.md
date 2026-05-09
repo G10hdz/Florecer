@@ -2,98 +2,73 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-Florecer-181717?logo=github)](https://github.com/G10hdz/Florecer)
 
-Gamified financial habit-building app for Spanish-speaking Latin American women (20-35, low-to-mid income). Uses dress-up game mechanics (Infinity Nikki style) + idol culture + companion characters to make saving emotionally rewarding.
+A gamified savings app that makes building financial habits feel rewarding. Track goals, earn XP, unlock cosmetics for your avatar companion, and celebrate progress — not just the numbers.
 
-## Core Loop
+## What It Does
 
-1. User sets financial goal (savings, emergency fund)
-2. Real financial progress unlocks avatar cosmetics + achievements
-3. Daily streak system for transaction logging
-4. Companion reacts to progress (no dialogue v1)
-5. Anonymous share cards: "Acabo de ahorrar 50% de mi meta 🎉" (no raw numbers)
-
-## What's Done
-
-- ✅ Complete system architecture (Mermaid diagrams)
-- ✅ Data models (6 entities, 2 embedded types)
-- ✅ BFF API contract (20 endpoints)
-- ✅ Gamification logic spec (XP, streaks, unlocks, mood)
-- ✅ React component tree
-- ✅ Stack decisions + justification
-- ✅ V1 scope boundary (what to build/skip)
-- ✅ QA testing surface
-- ✅ API service layer (`frontend/src/services/` + `frontend/src/types/api.ts`) — typed HTTP client with retry, goals/transactions/account services, dev/prod env config
+- **Set savings goals** and track progress visually
+- **Log deposits** to earn XP and build streaks
+- **Unlock avatar cosmetics** as milestones are reached
+- **Companion mood** reacts to your consistency — stay on track and it thrives
+- **Share achievements** anonymously — "Just saved 50% of my goal!" (no raw amounts)
+- **Impulse Swap** — one-tap converts impulse spending into savings deposits
 
 ## Tech Stack
 
 | Layer | Choice |
 |---|---|
-| Frontend | React + TypeScript + Tailwind + shadcn/ui (Vite, Vercel) |
-| BFF | Hono.js on Railway ($5/mo) |
-| Auth + DB | Supabase (free tier: 500MB, JWT, RLS) |
-| Financial data | Firefly III self-hosted (VPS €3.79/mo) |
-| Assets | Cloudflare R2 (10GB free, no egress) |
-| Share cards | Satori (no Puppeteer) |
-| Avatar gen | Vertex AI Imagen 3 + MuAPI (GCP credits) |
+| Frontend | React + TypeScript + Tailwind CSS + shadcn/ui (Vite) |
+| BFF | Hono.js |
+| Auth + DB | Supabase (JWT, RLS) |
+| Financial data | Firefly III (self-hosted) |
+| Assets | Cloudflare R2 |
+| Share cards | Satori |
+| Avatar gen | Vertex AI Imagen |
 | State | TanStack Query |
 
-## Quick Links
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for system design and data flows.
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — System design, Mermaid diagram, data flow
-- [STACK.md](./STACK.md) — Stack decisions, why each choice, risks
-- [DATA_MODELS.md](./DATA_MODELS.md) — TypeScript interfaces, schemas
-- [API.md](./API.md) — BFF endpoint contract
-- [GAMIFICATION.md](./GAMIFICATION.md) — XP, streaks, unlocks, mood engine
-- [COMPONENTS.md](./COMPONENTS.md) — React component tree
-- [ROADMAP.md](./ROADMAP.md) — V1 scope, what to skip, complexity flags
-- [frontend/src/services/](./frontend/src/services/) — API client, config, typed service modules
-- [frontend/src/types/api.ts](./frontend/src/types/api.ts) — TypeScript interfaces matching DATA_MODELS + API contract
+## Project Structure
 
-## Sprint Plan (6 weeks)
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── ui/          # Button, Input, Badge, Toast, Spinner, Tooltip, Avatar
+│   │   ├── molecules/   # XPBar, StreakBadge, MoodBar, ProgressBar, CosmeticCard, etc.
+│   │   ├── organisms/   # VisionBoard, ImpulseSwap, GoalCard, AvatarPreview, etc.
+│   │   └── pages/       # DashboardPage, LoginPage, OnboardingPage, WardrobePage, etc.
+│   ├── contexts/        # AuthContext
+│   ├── lib/             # gamification-engine.ts, pixel-art-assets.ts, utils
+│   ├── services/        # API client, goals, transactions, account
+│   └── types/           # TypeScript interfaces
+└── public/
+```
 
-**Week 1-2:** Auth + Firefly connect + goal creation  
-**Week 2-3:** Deposit log + XP + streak  
-**Week 3-4:** Avatar wardrobe + unlock pipeline  
-**Week 4-5:** Achievements + share card  
-**Week 5-6:** Companion widget + mobile QA + polish  
+## Getting Started
 
-Ship to 10 beta users week 6. Validate assumptions before adding features.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Critical Validations (Week 1)
+Copy `.env.example` to `.env.local` and fill in your values.
 
-- [ ] Satori renders Spanish text + long numbers (MXN/ARS format) correctly
-- [ ] Vertex AI Imagen 3 generates transparent-bg PNG layers (or segmentation extraction works)
-- [ ] Firefly III PAT auth + piggy bank creation flow (no multi-user OAuth in v1)
+## Tests
 
-## Key Decisions
+```bash
+cd frontend
+npm test
+```
 
-- **No raw financial amounts in frontend** — only %, XP, progress ratios
-- **Streak grace period = 48h** (not 24h) for timezone variance + UX
-- **Avatar = CSS layered PNG compositing** (not Canvas) — simpler, mobile-safe
-- **Companion v1 = sprite + mood only** (no AI dialogue)
-- **Firefly III = required dependency** (friction in onboarding, acceptable for v1 if target = tech-adjacent)
+## Design Principles
 
-## GCP Credits Strategy
+- **Positive reinforcement only** — no guilt mechanics, streak penalties are soft resets
+- **Privacy by default** — no raw financial amounts in the frontend, only percentages and XP
+- **Mobile-first** — CSS-layered avatar compositing (no Canvas), lightweight asset delivery
+- **Companion v1** — sprite + mood only (AI dialogue planned for v2)
 
-$18k GenAI App Builder credit (exp Apr 2027) covers:
-- Vertex AI Imagen 3 avatar generation (~$0.04/image)
-- Cloud Run jobs for asset pipeline
-- Optional: Vertex API for image segmentation (layer extraction)
+## License
 
-Removes artist dependency from critical path.
-
-## What's NOT in V1
-
-- Bank sync (Plaid, TrueLayer) — LATAM coverage bad, expensive
-- Debt/investment tracking — different data model
-- Social feed/following — full social graph = 3mo work
-- Push notifications — PWA phase
-- Companion dialogue — v2 with caching
-- Multi-currency — v2
-- Vision board — cute but not core loop (v2)
-
----
-
-Author: Bamzc  
-Stack locked: 2026-05-08  
-Ready to scaffold.
+MIT
