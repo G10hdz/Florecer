@@ -1,27 +1,34 @@
 # SESSION_HANDOFF — Florecer (2026-07-10)
 
 ## Estado
-Branch `G10hdz/feat/bff-and-frontend-wiring`, clean, **no pusheada**. Todo el plan de `HANDOFF.md` completado:
 
-| Task | Estado | Commit |
+Branch `G10hdz/feat/bff-and-frontend-wiring`, clean y no pusheada. Todo `HANDOFF.md`, Task 4b y la limpieza de lint están completos y commiteados.
+
+| Trabajo | Estado | Commit |
 |---|---|---|
-| 1 Frontend baseline | ✅ | (base) |
-| 2 Hono BFF | ✅ | `3b4d83f` |
-| 3/3b Frontend wiring | ✅ | `3bd8bb1` |
-| 4 Asset pipeline | ✅ | `77cf90a` |
-| 4b Dashboard goal icons | ✅ | `f0b59ae` |
+| Hono BFF | ✅ | `3b4d83f` |
+| Frontend → BFF + dashboard states | ✅ | `3bd8bb1` |
+| Asset pipeline + celebration | ✅ | `77cf90a` |
+| Goal icons | ✅ | `f0b59ae` |
+| Handoff maestro | ✅ | `810ba07` |
+| Lint frontend | ✅ | `2317fe2` |
 
-**Verificado:** `cd frontend && npm test -- --run` → 72/72; `npm run build` → exit 0. Demo en navegador confirmado en sesión previa (register→goal→deposit→XP toast→iconos pixel-art). Ámbito de `ARCHITECTURE.md` (Supabase, Firefly, R2, Satori, Vertex) **diferido/stubbed**.
+Verificación fresca: frontend lint/build verdes y 72/72 tests; BFF build verde y 2/2 tests. El lint se corrigió sin desactivar reglas: exports no-component separados y estado derivado/lazy en React.
 
 ## Siguiente paso
-**Opción A — Push/PR:** `git push -u origin G10hdz/feat/bff-and-frontend-wiring` y abrir PR. Revalidar antes: `npm test`+`build` en `frontend/` y `bff/`, y revisar diff contra base.
-**Opción B — Scope diferido:** elegir un slice de ARCHITECTURE.md y escribir plan enfocado (necesita creds/targets de deploy).
 
-## Notas clave
-- Engine de gamificación duplicado frontend/BFF (extraer a paquete compartido después).
-- `bff/data/florecer.db` está gitignored.
-- Sandbox delegados: sin red — coordinator corre install/verify.
-- Dev servers: BFF `:8787`, frontend `:5173` (`VITE_BFF_URL` ya apunta al BFF).
+- [ ] Push de la rama y abrir PR a `main` (requiere autorización explícita).
+- [ ] Tras merge, elegir un slice diferido de `ARCHITECTURE.md` y definir credenciales/target.
+
+## Notas
+
+- Scope diferido/stubbed: Supabase, Firefly III, R2, Satori y Vertex.
+- Engine de gamificación duplicado frontend/BFF por diseño temporal.
+- `main` ya tenía 33 errores de lint; la rama heredaba 29 antes del arreglo.
 
 ## Archivos clave
-`HANDOFF.md` (plan/spec) · `ARCHITECTURE.md` (scope diferido) · `reports/task-*-report.md` (evidencia) · `reports/SESSION-SUMMARY.md` (detalle) · `frontend/src/lib/pixel-art-assets.ts` (mapper iconos) · `bff/src/index.ts` (15 endpoints)
+
+- `reports/SESSION-SUMMARY.md` — historial y verificación
+- `frontend/src/lib/toast.ts` — boundary no-component de Toast
+- `frontend/src/contexts/auth-context-value.ts` — context/hook separados
+- `frontend/src/components/pages/dashboard-state.ts` — selector testeable

@@ -1,7 +1,7 @@
 # Florecer — Session Summary (for Fable on return)
 
-_Last updated: 2026-07-10. All 4 HANDOFF tasks + Task 4b are done and committed.
-Branch `G10hdz/feat/bff-and-frontend-wiring` is 5 commits ahead of `origin/main`,
+_Last updated: 2026-07-10. All 4 HANDOFF tasks + Task 4b and lint cleanup are done.
+Branch `G10hdz/feat/bff-and-frontend-wiring` is 7 commits ahead of local `main`,
 NOT yet pushed. Coordinator = whoever has the browser + can run dev servers._
 
 ## Where we are
@@ -18,6 +18,7 @@ to codex (cheap), coordinator verifies. Progress reports live in `reports/task-*
 | 3b | Fix dashboard error-vs-empty state | ✅ FULLY DONE — verified end-to-end in-browser (all 3 states) |
 | 4 | Asset integration pipeline | ✅ DONE, verified in-browser (commit `77cf90a`) |
 | 4b | Show pixel-art goal icons on dashboard | ✅ DONE, verified in-browser, 72/72 tests (commit `f0b59ae`) |
+| Lint | Resolve inherited frontend lint errors | ✅ DONE — lint/build green, 72/72 tests (`2317fe2`) |
 
 **Task 3b had a second, deeper bug** found during in-browser verify: with the BFF
 down the dashboard spun forever (never reached the error panel). Cause: react-query v5
@@ -40,12 +41,20 @@ icons (accent-insensitive, word-boundary keyword matching to avoid false positiv
 focused-goal header, `VisionGrid` cards, and `ImpulseSwap`, replacing the generic emoji.
 +12 mapper unit tests → 72/72 total. Spec in `reports/task-4b-spec.md`.
 
+**Lint cleanup** (commit `2317fe2`): fixed all 29 inherited ESLint errors without
+disabling rules. React-only modules now keep contexts, hooks, CVA variants, constants,
+and pure dashboard state in separate files; synchronous effect state was replaced with
+derived state or lazy initialization. Fresh verification: lint/build green, frontend
+72/72 tests, BFF build + 2/2 tests.
+
 **Immediate next action:** push the branch and open a PR to `main` — there is no
 upstream set and no PR yet. After merge, only deferred/stubbed scope remains.
 
 ## Commits on this branch (ahead of origin/main)
 
 ```
+2317fe2 fix(frontend): Resolve lint errors
+810ba07 docs: Complete session handoff
 f0b59ae feat(frontend): Show pixel-art goal icons on dashboard   (Task 4b)
 77cf90a feat(frontend): Add pixel-art asset pipeline + deposit celebration (Task 4)
 0541d9f docs: Add handoff plan and task reports
