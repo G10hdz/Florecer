@@ -3,10 +3,12 @@ import { useNavigate, Link } from "react-router-dom"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useToast } from "@/components/ui/Toast"
+import { useAuth } from "@/contexts/AuthContext"
 
 function RegisterPage() {
   const navigate = useNavigate()
   const { addToast } = useToast()
+  const { register } = useAuth()
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [confirmPassword, setConfirmPassword] = React.useState("")
@@ -31,8 +33,7 @@ function RegisterPage() {
     }
 
     try {
-      // TODO: Implement actual auth API call
-      console.log("Register:", { email, password })
+      await register(email, password)
       
       addToast({
         message: "¡Cuenta creada! 🎉",
@@ -41,7 +42,7 @@ function RegisterPage() {
       
       navigate("/onboarding")
     } catch (err) {
-      setError("Error al crear cuenta")
+      setError(err instanceof Error ? err.message : "Error al crear cuenta")
       addToast({
         message: "Error en registro",
         type: "destructive",

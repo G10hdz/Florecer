@@ -8,6 +8,7 @@ function ShareCardPage() {
   const navigate = useNavigate()
   const { addToast } = useToast()
 
+  // TODO(v2): backed by /avatar + /share endpoints.
   const shareData = {
     shareUrl: "https://girl-finance.com/share/abc123",
     ogImageUrl: undefined,

@@ -24,6 +24,7 @@ function WardrobePage() {
   }
 
   const cosmetics: Cosmetic[] = [
+    // TODO(v2): backed by /avatar + /share endpoints.
     { cosmetic_id: "hat_1", name: "Sombrero Decorativo", category: "hat", emoji: "🎩" },
     { cosmetic_id: "dress_1", name: "Vestido Ahorrador", category: "dress", emoji: "👗" },
     { cosmetic_id: "shoes_1", name: "Zapatos de Éxito", category: "shoes", emoji: "👠" },

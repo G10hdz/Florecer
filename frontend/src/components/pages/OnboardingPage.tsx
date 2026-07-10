@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useToast } from "@/components/ui/Toast"
+import { setFireflyPat } from "@/services/account"
+import { createGoal } from "@/services/goals"
 
 function OnboardingPage() {
   const navigate = useNavigate()
@@ -22,18 +24,15 @@ function OnboardingPage() {
     setPatError("")
 
     try {
-      // TODO: Implement PAT validation API call
-      console.log("Validating PAT:", pat)
-      
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await setFireflyPat({ pat })
       
       setStep(2)
       addToast({
         message: "¡Firefly conectado! 🎉",
         type: "success",
       })
-    } catch {
-      setPatError("PAT inválido. Verifica tu token.")
+    } catch (error) {
+      setPatError(error instanceof Error ? error.message : "PAT inválido. Verifica tu token.")
       addToast({
         message: "Error al conectar Firefly",
         type: "destructive",
@@ -48,10 +47,12 @@ function OnboardingPage() {
     setSubmitting(true)
 
     try {
-      // TODO: Implement goal creation API call
-      console.log("Creating goal:", { goalName, targetAmount, deadline })
-      
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await createGoal({
+        name: goalName,
+        target_amount: Number(targetAmount),
+        currency: "MXN",
+        deadline,
+      })
       
       addToast({
         message: "¡Meta creada! 🎯",
@@ -59,9 +60,9 @@ function OnboardingPage() {
       })
       
       navigate("/dashboard")
-    } catch {
+    } catch (error) {
       addToast({
-        message: "Error al crear meta",
+        message: error instanceof Error ? error.message : "Error al crear meta",
         type: "destructive",
       })
     } finally {

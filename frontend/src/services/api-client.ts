@@ -2,6 +2,8 @@ import { getConfig } from "./config"
 import { FlorecerApiError, type ApiErrorResponse } from "@/types/api"
 
 const IDEMPOTENT_METHODS = new Set(["GET", "HEAD", "OPTIONS"])
+const AUTH_TOKEN_KEY = "florecer.auth.token"
+const AUTH_USER_KEY = "florecer.auth.user"
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -35,13 +37,17 @@ export async function request<T>(
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
     try {
+      const token = getStoredAuthToken()
+      const headers = new Headers(options.headers)
+      headers.set("Content-Type", "application/json")
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`)
+      }
+
       const response = await fetch(url, {
         ...options,
         signal: options.signal ?? controller.signal,
-        headers: {
-          "Content-Type": "application/json",
-          ...options.headers,
-        },
+        headers,
       })
 
       if (response.ok) {
@@ -53,6 +59,7 @@ export async function request<T>(
 
       if (response.status === 401 || response.status === 403) {
         const body = await parseErrorBody(response)
+        clearStoredAuth()
         throw new FlorecerApiError(body.code, body.message, response.status)
       }
 
@@ -94,6 +101,39 @@ export async function request<T>(
     `Request to ${path} failed after ${maxAttempts} attempts`,
     0
   )
+}
+
+export function getStoredAuthToken(): string | null {
+  if (typeof window === "undefined") return null
+  return window.localStorage.getItem(AUTH_TOKEN_KEY)
+}
+
+export function setStoredAuth(token: string, user: unknown): void {
+  if (typeof window === "undefined") return
+  window.localStorage.setItem(AUTH_TOKEN_KEY, token)
+  window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
+}
+
+export function getStoredAuthUser<T>(): T | null {
+  if (typeof window === "undefined") return null
+  const storedUser = window.localStorage.getItem(AUTH_USER_KEY)
+  if (!storedUser) return null
+
+  try {
+    return JSON.parse(storedUser) as T
+  } catch {
+    clearStoredAuth()
+    return null
+  }
+}
+
+export function clearStoredAuth(): void {
+  if (typeof window === "undefined") return
+  window.localStorage.removeItem(AUTH_TOKEN_KEY)
+  window.localStorage.removeItem(AUTH_USER_KEY)
+  if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+    window.location.assign("/login")
+  }
 }
 
 async function parseErrorBody(response: Response): Promise<{ code: string; message: string }> {

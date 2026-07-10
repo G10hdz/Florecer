@@ -40,3 +40,5 @@ STACK.md
 .claude/
 .remember/
 memory/
+# Build artifacts
+*.tsbuildinfo

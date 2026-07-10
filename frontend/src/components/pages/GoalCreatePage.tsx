@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useToast } from "@/components/ui/Toast"
+import { createGoal } from "@/services/goals"
 
 function GoalCreatePage() {
   const navigate = useNavigate()
@@ -21,10 +22,12 @@ function GoalCreatePage() {
     setSubmitting(true)
 
     try {
-      // TODO: Implement goal creation API call
-      console.log("Creating goal:", formData)
-      
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await createGoal({
+        name: formData.name,
+        target_amount: Number(formData.target_amount),
+        currency: formData.currency,
+        deadline: formData.deadline,
+      })
       
       addToast({
         message: "¡Meta creada! 🎯",
@@ -32,9 +35,9 @@ function GoalCreatePage() {
       })
       
       navigate("/dashboard")
-    } catch {
+    } catch (error) {
       addToast({
-        message: "Error al crear meta",
+        message: error instanceof Error ? error.message : "Error al crear meta",
         type: "destructive",
       })
     } finally {

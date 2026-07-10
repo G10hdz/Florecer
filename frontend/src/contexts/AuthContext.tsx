@@ -1,15 +1,14 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
-
-interface User {
-  user_id: string
-  email: string
-}
+import { clearStoredAuth, getStoredAuthToken, getStoredAuthUser, setStoredAuth } from "@/services/api-client"
+import { login as loginRequest, register as registerRequest } from "@/services/auth"
+import type { User } from "@/types/api"
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  error: string | null
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
   logout: () => void
@@ -20,34 +19,46 @@ const AuthContext = React.createContext<AuthContextType | null>(null)
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    const storedUser = sessionStorage.getItem("user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    const storedToken = getStoredAuthToken()
+    const storedUser = getStoredAuthUser<User>()
+    if (storedToken && storedUser) {
+      setUser(storedUser)
     }
     setIsLoading(false)
   }, [])
 
   const login = async (email: string, password: string) => {
-    // TODO: Implement actual API call
-    console.log("Login:", email)
-    const mockUser = { user_id: "1", email }
-    setUser(mockUser)
-    sessionStorage.setItem("user", JSON.stringify(mockUser))
+    setError(null)
+    try {
+      const response = await loginRequest({ email, password })
+      setStoredAuth(response.token, response.user)
+      setUser(response.user)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Login failed"
+      setError(message)
+      throw err
+    }
   }
 
   const register = async (email: string, password: string) => {
-    // TODO: Implement actual API call
-    console.log("Register:", email)
-    const mockUser = { user_id: "1", email }
-    setUser(mockUser)
-    sessionStorage.setItem("user", JSON.stringify(mockUser))
+    setError(null)
+    try {
+      const response = await registerRequest({ email, password })
+      setStoredAuth(response.token, response.user)
+      setUser(response.user)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Registration failed"
+      setError(message)
+      throw err
+    }
   }
 
   const logout = () => {
     setUser(null)
-    sessionStorage.removeItem("user")
+    clearStoredAuth()
   }
 
   return (
@@ -56,6 +67,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
+        error,
         login,
         register,
         logout,

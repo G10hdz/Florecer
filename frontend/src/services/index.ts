@@ -1,4 +1,5 @@
 export { request, get, post, del } from "./api-client"
+export { login, register } from "./auth"
 export { createGoal, listGoals, getGoal, deleteGoal, getGamificationSummary, getMilestones } from "./goals"
 export { logDeposit, listDeposits } from "./transactions"
 export { getFireflyStatus, setFireflyPat, getCompanion, getMoodHistory, getHealth } from "./account"

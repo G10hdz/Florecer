@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useToast } from "@/components/ui/Toast"
+import { logDeposit } from "@/services/transactions"
 
 export interface DepositModalProps {
   open: boolean
@@ -50,7 +51,7 @@ function DepositModal({ open, onClose, onSubmit, currency, defaultAmount, defaul
       onClose()
     } catch (error) {
       addToast({
-        message: "Error al registrar depósito",
+        message: error instanceof Error ? error.message : "Error al registrar depósito",
         type: "destructive",
       })
     } finally {
@@ -129,8 +130,12 @@ function DepositButton({
   const [open, setOpen] = React.useState(false)
 
   const handleSubmit = async (data: { amount: number; note: string }) => {
-    // TODO: Implement API call
-    console.log("Deposit:", { goalId, ...data })
+    await logDeposit({
+      goal_id: goalId,
+      amount: data.amount,
+      currency,
+      note: data.note || undefined,
+    })
     onSuccess?.()
   }
 

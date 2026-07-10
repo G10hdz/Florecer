@@ -15,119 +15,185 @@
  * 4. Deposit → Watch that future get closer
  */
 import * as React from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/components/ui/Toast"
 import { VisionBoard } from "@/components/organisms/VisionBoard"
 import { VisionGrid } from "@/components/organisms/VisionGrid"
 import { ImpulseSwap } from "@/components/organisms/ImpulseSwap"
 import { CompanionWidget } from "@/components/organisms/CompanionWidget"
 import { DepositModal } from "@/components/organisms/DepositModal"
+import { MilestoneTrack } from "@/components/organisms/MilestoneTrack"
 import { StreakBadge } from "@/components/molecules/StreakBadge"
-import { PixelArtSprite } from "@/components/molecules/PixelArtSprite"
 import { Button } from "@/components/ui/Button"
 import type { VisionGoal } from "@/components/organisms/VisionGrid"
+import { getCompanion } from "@/services/account"
+import { getGamificationSummary, getMilestones, listGoals } from "@/services/goals"
+import { logDeposit } from "@/services/transactions"
+import type { Goal } from "@/types/api"
 import { cn } from "@/lib/utils"
+import heroImage from "@/assets/hero.png"
 
-// Your actual goals - customize image URLs with real photos
-const MY_GOALS: VisionGoal[] = [
-  {
-    goal_id: "laptop",
-    name: "Laptop para crear",
-    progress_percent: 42,
-    current_amount: 10500,
-    target_amount: 25000,
-    currency: "MXN",
-    vision_image_url: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80",
-    priority: "urgent",
-    emoji: "💻",
-  },
-  {
-    goal_id: "phone",
-    name: "Mejor teléfono",
-    progress_percent: 15,
-    current_amount: 1800,
-    target_amount: 12000,
-    currency: "MXN",
-    vision_image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80",
-    priority: "soon",
-    emoji: "📱",
-  },
-  {
-    goal_id: "mic",
-    name: "Micrófono para contenido",
-    progress_percent: 30,
-    current_amount: 900,
-    target_amount: 3000,
-    currency: "MXN",
-    vision_image_url: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&q=80",
-    priority: "soon",
-    emoji: "🎙️",
-  },
-  {
-    goal_id: "minipc",
-    name: "Mini PC para IA local",
-    progress_percent: 20,
-    current_amount: 2400,
-    target_amount: 12000,
-    currency: "MXN",
-    vision_image_url: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=800&q=80",
-    priority: "soon",
-    emoji: "🖥️",
-  },
-  {
-    goal_id: "motorbike",
-    name: "Motocicleta",
-    progress_percent: 8,
-    current_amount: 4000,
-    target_amount: 50000,
-    currency: "MXN",
-    vision_image_url: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80",
-    priority: "future",
-    emoji: "🏍️",
-  },
-  {
-    goal_id: "dgx",
-    name: "NVIDIA DGX Spark",
-    progress_percent: 2,
-    current_amount: 1500,
-    target_amount: 75000,
-    currency: "MXN",
-    vision_image_url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
-    priority: "dream",
-    emoji: "🧠",
-  },
-  {
-    goal_id: "positronica",
-    name: "Positronica Labs",
-    progress_percent: 5,
-    current_amount: 2500,
-    target_amount: 50000,
-    currency: "MXN",
-    vision_image_url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
-    priority: "dream",
-    emoji: "🚀",
-  },
-]
+const goalEmojis = ["🎯", "💻", "📱", "🎙️", "🏠", "✈️", "🚲", "📚"]
 
-const avatarUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&q=80"
+type DashboardQueryState = {
+  isError: boolean
+  isPending: boolean
+  isSuccess: boolean
+  // react-query pauses a query (fetchStatus 'paused', status stays 'pending')
+  // when the BFF is unreachable; treat that as an error so the UI never spins
+  // forever. Optional so it defaults to "not paused" for older callers/tests.
+  isPaused?: boolean
+}
+
+type DashboardGoalsQueryState = DashboardQueryState & {
+  data?: { goals: unknown[] }
+}
+
+type DashboardStateQueries = {
+  goalsQuery: DashboardGoalsQueryState
+  summaryQuery: DashboardQueryState
+  companionQuery: DashboardQueryState
+  milestonesQuery: DashboardQueryState
+}
+
+type DashboardRenderState = "error" | "pending" | "empty" | "ready"
+
+function selectDashboardState({
+  goalsQuery,
+  summaryQuery,
+  companionQuery,
+  milestonesQuery,
+}: DashboardStateQueries): DashboardRenderState {
+  if (goalsQuery.isError || summaryQuery.isError || companionQuery.isError || milestonesQuery.isError) {
+    return "error"
+  }
+
+  // A paused query means the BFF couldn't be reached — surface it as an error
+  // rather than an indefinite loading spinner.
+  if (goalsQuery.isPaused || summaryQuery.isPaused || companionQuery.isPaused || milestonesQuery.isPaused) {
+    return "error"
+  }
+
+  if (goalsQuery.isPending || summaryQuery.isPending || companionQuery.isPending || milestonesQuery.isPending) {
+    return "pending"
+  }
+
+  if (goalsQuery.isSuccess && goalsQuery.data?.goals.length === 0) {
+    return "empty"
+  }
+
+  return "ready"
+}
+
+function goalToVisionGoal(goal: Goal, index: number): VisionGoal {
+  return {
+    goal_id: goal.goal_id,
+    name: goal.name,
+    progress_percent: goal.progress_percent,
+    current_amount: goal.current_amount,
+    target_amount: goal.target_amount,
+    currency: goal.currency,
+    vision_image_url: heroImage,
+    priority: getPriority(goal),
+    emoji: goalEmojis[index % goalEmojis.length],
+  }
+}
+
+function getPriority(goal: Goal): VisionGoal["priority"] {
+  const daysUntilDeadline = Math.ceil(
+    (new Date(goal.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  )
+  if (goal.progress_percent >= 100) return "future"
+  if (daysUntilDeadline <= 30) return "urgent"
+  if (daysUntilDeadline <= 90) return "soon"
+  return goal.target_amount >= 50_000 ? "dream" : "future"
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "No se pudo conectar con el BFF"
+}
 
 function DashboardPage() {
   const { addToast } = useToast()
-  const [focusedGoalId, setFocusedGoalId] = React.useState("laptop")
+  const queryClient = useQueryClient()
+  const [focusedGoalId, setFocusedGoalId] = React.useState<string | null>(null)
   const [depositOpen, setDepositOpen] = React.useState(false)
   const [depositDefaults, setDepositDefaults] = React.useState<{ amount?: number; note?: string }>({})
 
-  const focusedGoal = MY_GOALS.find((g) => g.goal_id === focusedGoalId) || MY_GOALS[0]
+  const goalsQuery = useQuery({
+    queryKey: ["goals"],
+    queryFn: ({ signal }) => listGoals(signal),
+  })
+  const summaryQuery = useQuery({
+    queryKey: ["gamification", "summary"],
+    queryFn: ({ signal }) => getGamificationSummary(signal),
+  })
+  const companionQuery = useQuery({
+    queryKey: ["companion"],
+    queryFn: ({ signal }) => getCompanion(signal),
+  })
+  const milestonesQuery = useQuery({
+    queryKey: ["gamification", "milestones"],
+    queryFn: ({ signal }) => getMilestones(signal),
+  })
 
-  // TODO: Replace with TanStack Query + real data
-  const companion = {
-    mood: 72,
-    streak: 5,
-    hoursUntilBreak: 38,
-  }
+  const goals = React.useMemo(
+    () => goalsQuery.data?.goals.map(goalToVisionGoal) ?? [],
+    [goalsQuery.data]
+  )
 
-  const totalSaved = MY_GOALS.reduce((sum, g) => sum + g.current_amount, 0)
-  const totalTarget = MY_GOALS.reduce((sum, g) => sum + g.target_amount, 0)
-  const overallProgress = Math.round((totalSaved / totalTarget) * 100)
+  React.useEffect(() => {
+    if (!focusedGoalId && goals[0]) {
+      setFocusedGoalId(goals[0].goal_id)
+    }
+    if (focusedGoalId && goals.length > 0 && !goals.some((goal) => goal.goal_id === focusedGoalId)) {
+      setFocusedGoalId(goals[0].goal_id)
+    }
+  }, [focusedGoalId, goals])
+
+  const focusedGoal = goals.find((g) => g.goal_id === focusedGoalId) ?? goals[0]
+
+  const depositMutation = useMutation({
+    mutationFn: (data: { amount: number; note: string }) => {
+      if (!focusedGoal) {
+        throw new Error("Crea una meta antes de registrar depósitos")
+      }
+
+      return logDeposit({
+        goal_id: focusedGoal.goal_id,
+        amount: data.amount,
+        currency: focusedGoal.currency,
+        note: data.note || undefined,
+      })
+    },
+    onSuccess: async (deposit) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["goals"] }),
+        queryClient.invalidateQueries({ queryKey: ["gamification"] }),
+        queryClient.invalidateQueries({ queryKey: ["companion"] }),
+      ])
+      addToast({
+        message: `+${deposit.xp_earned} XP registrado desde el BFF`,
+        type: "success",
+      })
+    },
+  })
+
+  const totalSaved = goals.reduce((sum, g) => sum + g.current_amount, 0)
+  const totalTarget = goals.reduce((sum, g) => sum + g.target_amount, 0)
+  const overallProgress = totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0
+  const companion = companionQuery.data
+  const summary = summaryQuery.data
+  const milestones = milestonesQuery.data?.milestones ?? []
+  const nextMilestone = milestones.find((milestone) => !milestone.unlocked)
+
+  const dashboardState = selectDashboardState({
+    goalsQuery,
+    summaryQuery,
+    companionQuery,
+    milestonesQuery,
+  })
+  const error = goalsQuery.error ?? summaryQuery.error ?? companionQuery.error ?? milestonesQuery.error
 
   const handleImpulseSwap = (amount: number, category: string) => {
     setDepositDefaults({
@@ -138,15 +204,94 @@ function DashboardPage() {
   }
 
   const handleDepositSubmit = async (data: { amount: number; note: string }) => {
-    // TODO: Wire to API
-    console.log("Deposit to", focusedGoal.name, ":", data)
-    addToast({
-      message: `¡+$${data.amount} MXN hacia ${focusedGoal.name}! ✨`,
-      type: "success",
-    })
+    await depositMutation.mutateAsync(data)
   }
 
-  const daysUntilDeadline = 90 // Placeholder
+  const daysUntilDeadline = focusedGoal
+    ? Math.ceil((new Date(goalsQuery.data?.goals.find((goal) => goal.goal_id === focusedGoal.goal_id)?.deadline ?? "").getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0
+
+  if (dashboardState === "error") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-base to-surface flex items-center justify-center p-4">
+        <div className="bg-surface rounded-2xl border-2 border-destructive p-6 max-w-md shadow-lg space-y-4">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">No se pudo cargar Florecer</h1>
+            <p className="text-sm text-muted-foreground mt-2">
+              El BFF no respondió o rechazó la solicitud. No hay datos mock en esta pantalla.
+            </p>
+          </div>
+          <p className="text-sm text-destructive">{getErrorMessage(error)}</p>
+          <Button
+            variant="pop"
+            className="w-full"
+            onClick={() => {
+              goalsQuery.refetch()
+              summaryQuery.refetch()
+              companionQuery.refetch()
+              milestonesQuery.refetch()
+            }}
+          >
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (dashboardState === "pending") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-base to-surface flex items-center justify-center p-4">
+        <div className="bg-surface rounded-2xl border-2 border-border p-6 text-center shadow-lg">
+          <p className="text-lg font-semibold text-foreground">Cargando datos del BFF...</p>
+          <p className="text-sm text-muted-foreground mt-2">No se mostrará información de ejemplo.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (dashboardState === "empty") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-base to-surface flex items-center justify-center p-4">
+        <div className="bg-surface rounded-2xl border-2 border-border p-6 max-w-md shadow-lg space-y-4 text-center">
+          <h1 className="text-xl font-bold text-foreground">Aún no tienes metas</h1>
+          <p className="text-sm text-muted-foreground">
+            Crea una meta para empezar a registrar depósitos reales en el BFF.
+          </p>
+          <Button variant="pop" className="w-full" onClick={() => { window.location.href = "/goals/new" }}>
+            Crear meta
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!focusedGoal || !companion || !summary) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-base to-surface flex items-center justify-center p-4">
+        <div className="bg-surface rounded-2xl border-2 border-destructive p-6 max-w-md shadow-lg space-y-4">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">No se pudo cargar Florecer</h1>
+            <p className="text-sm text-muted-foreground mt-2">
+              El BFF respondió con datos incompletos. No hay datos mock en esta pantalla.
+            </p>
+          </div>
+          <Button
+            variant="pop"
+            className="w-full"
+            onClick={() => {
+              goalsQuery.refetch()
+              summaryQuery.refetch()
+              companionQuery.refetch()
+              milestonesQuery.refetch()
+            }}
+          >
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-base to-surface">
@@ -184,14 +329,14 @@ function DashboardPage() {
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {totalSaved.toLocaleString()} / {totalTarget.toLocaleString()} MXN en {MY_GOALS.length} metas
+            {totalSaved.toLocaleString()} / {totalTarget.toLocaleString()} MXN en {goals.length} metas
           </p>
         </div>
 
         {/* Vision Grid — All Your Futures */}
         <VisionGrid
-          goals={MY_GOALS}
-          focusedGoalId={focusedGoalId}
+          goals={goals}
+          focusedGoalId={focusedGoal.goal_id}
           onFocus={setFocusedGoalId}
         />
 
@@ -243,6 +388,26 @@ function DashboardPage() {
           </div>
         </div>
 
+        <div className="bg-surface rounded-2xl border-2 border-border p-5 shadow-lg space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-foreground">XP y desbloqueos</h3>
+              <p className="text-sm text-muted-foreground">
+                {summary.milestones_unlocked}/{summary.milestones_total} hitos desbloqueados
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-primary">{summary.total_xp}</p>
+              <p className="text-xs text-muted-foreground">XP total</p>
+            </div>
+          </div>
+          <MilestoneTrack
+            currentXP={summary.total_xp}
+            milestones={milestones}
+            nextMilestone={nextMilestone}
+          />
+        </div>
+
         {/* Impulse Swap — Targeted to Focused Goal */}
         <div className="bg-surface rounded-2xl border-2 border-border p-5 shadow-lg">
           <div className="flex items-center gap-2 mb-4">
@@ -264,15 +429,15 @@ function DashboardPage() {
 
         {/* Companion */}
         <CompanionWidget
-          mood={companion.mood}
+          mood={companion.current_mood}
           streak={companion.streak}
-          hoursUntilBreak={companion.hoursUntilBreak}
-          pixelArtSrc="/assets/pixelart/companion_happy.png"
+          hoursUntilBreak={companion.hours_until_streak_break}
+          pixelArtSrc={`/assets/pixelart/companion_${companion.mood_state}.png`}
         />
 
         {/* Quick Actions */}
         <div className="flex gap-3">
-          <Button
+        <Button
             onClick={() => {
               setDepositDefaults({})
               setDepositOpen(true)
@@ -325,4 +490,4 @@ function DashboardPage() {
   )
 }
 
-export { DashboardPage }
+export { DashboardPage, selectDashboardState }

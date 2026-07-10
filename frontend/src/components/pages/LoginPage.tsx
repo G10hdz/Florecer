@@ -3,10 +3,12 @@ import { useNavigate, Link } from "react-router-dom"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useToast } from "@/components/ui/Toast"
+import { useAuth } from "@/contexts/AuthContext"
 
 function LoginPage() {
   const navigate = useNavigate()
   const { addToast } = useToast()
+  const { login } = useAuth()
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [loading, setLoading] = React.useState(false)
@@ -18,8 +20,7 @@ function LoginPage() {
     setError("")
 
     try {
-      // TODO: Implement actual auth API call
-      console.log("Login:", { email, password })
+      await login(email, password)
       
       addToast({
         message: "¡Bienvenida! 🎉",
@@ -28,7 +29,7 @@ function LoginPage() {
       
       navigate("/dashboard")
     } catch (err) {
-      setError("Email o contraseña inválidos")
+      setError(err instanceof Error ? err.message : "Email o contraseña inválidos")
       addToast({
         message: "Error al iniciar sesión",
         type: "destructive",

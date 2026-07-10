@@ -7,6 +7,11 @@ export interface User {
   companion_mood: number
 }
 
+export interface AuthResponse {
+  token: string
+  user: User
+}
+
 export interface Goal {
   goal_id: string
   user_id: string
