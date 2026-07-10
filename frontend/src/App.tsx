@@ -84,7 +84,21 @@ function App() {
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
-          <AppRoutes />
+          <div className="min-h-screen flex flex-col">
+            <div className="flex-1">
+              <AppRoutes />
+            </div>
+            <footer className="px-4 py-3 text-center text-xs text-muted-foreground">
+              <a
+                href="/assets/pixelart/CREDITS.md"
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                Créditos de arte
+              </a>
+            </footer>
+          </div>
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>

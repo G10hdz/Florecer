@@ -46,8 +46,7 @@ function PixelArtSprite({
         src={src}
         alt={alt}
         className={cn(
-          "w-full h-full object-contain",
-          "[image-rendering:pixelated] [image-rendering:crisp-edges]"
+          "pixelart w-full h-full object-contain"
         )}
       />
       

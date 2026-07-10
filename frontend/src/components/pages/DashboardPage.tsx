@@ -23,6 +23,7 @@ import { ImpulseSwap } from "@/components/organisms/ImpulseSwap"
 import { CompanionWidget } from "@/components/organisms/CompanionWidget"
 import { DepositModal } from "@/components/organisms/DepositModal"
 import { MilestoneTrack } from "@/components/organisms/MilestoneTrack"
+import { CelebrationBurst } from "@/components/molecules/CelebrationBurst"
 import { StreakBadge } from "@/components/molecules/StreakBadge"
 import { Button } from "@/components/ui/Button"
 import type { VisionGoal } from "@/components/organisms/VisionGrid"
@@ -119,6 +120,7 @@ function DashboardPage() {
   const [focusedGoalId, setFocusedGoalId] = React.useState<string | null>(null)
   const [depositOpen, setDepositOpen] = React.useState(false)
   const [depositDefaults, setDepositDefaults] = React.useState<{ amount?: number; note?: string }>({})
+  const [celebrationId, setCelebrationId] = React.useState(0)
 
   const goalsQuery = useQuery({
     queryKey: ["goals"],
@@ -176,6 +178,7 @@ function DashboardPage() {
         message: `+${deposit.xp_earned} XP registrado desde el BFF`,
         type: "success",
       })
+      setCelebrationId((id) => id + 1)
     },
   })
 
@@ -486,6 +489,9 @@ function DashboardPage() {
         defaultAmount={depositDefaults.amount}
         defaultNote={depositDefaults.note}
       />
+      {celebrationId > 0 && (
+        <CelebrationBurst key={celebrationId} onComplete={() => setCelebrationId(0)} />
+      )}
     </div>
   )
 }

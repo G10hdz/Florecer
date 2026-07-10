@@ -42,3 +42,6 @@ STACK.md
 memory/
 # Build artifacts
 *.tsbuildinfo
+
+# Raw asset pack sources (not shipped)
+assets-src/
