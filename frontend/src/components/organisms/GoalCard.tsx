@@ -1,5 +1,4 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { ProgressBar } from "@/components/molecules/ProgressBar"
 import { XPBar } from "@/components/molecules/XPBar"
 import { StreakBadge } from "@/components/molecules/StreakBadge"
@@ -30,8 +29,9 @@ export interface GoalCardProps {
 }
 
 function GoalCard({ goal, streak, onDeposit }: GoalCardProps) {
+  const [renderedAt] = React.useState(() => Date.now())
   const daysUntilDeadline = Math.ceil(
-    (new Date(goal.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    (new Date(goal.deadline).getTime() - renderedAt) / (1000 * 60 * 60 * 24)
   )
 
   return (

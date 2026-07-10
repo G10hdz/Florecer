@@ -8,18 +8,11 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
-import { PixelArtSprite } from "@/components/molecules/PixelArtSprite"
 import {
   FULL_CATALOG,
   type PixelAsset,
   buildVertexPrompt,
 } from "@/lib/pixel-art-assets"
-
-interface AssetStatus {
-  asset: PixelAsset
-  status: "missing" | "generated" | "retouched" | "final"
-  notes?: string
-}
 
 const CATEGORIES = [
   { id: "companion_mood", label: "🌱 Compañera", desc: "4 estados emocionales" },

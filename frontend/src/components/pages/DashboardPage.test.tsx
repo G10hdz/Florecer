@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { selectDashboardState } from "./DashboardPage"
+import { selectDashboardState } from "./dashboard-state"
 
 type QueryState = Parameters<typeof selectDashboardState>[0]["summaryQuery"]
 type GoalsQueryState = Parameters<typeof selectDashboardState>[0]["goalsQuery"]

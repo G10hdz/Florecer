@@ -43,7 +43,7 @@ function MilestoneTrack({ currentXP, milestones = [], nextMilestone }: Milestone
         
         {/* Milestone Dots */}
         <div className="flex justify-between relative">
-          {displayMilestones.map((milestone, index) => {
+          {displayMilestones.map((milestone) => {
             const unlocked = currentXP >= milestone.xp_threshold
             const isNext = !unlocked && (!nextMilestone || milestone.cosmetic_id === nextMilestone.cosmetic_id)
 

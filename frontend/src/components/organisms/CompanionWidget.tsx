@@ -1,5 +1,4 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { CompanionSprite } from "@/components/molecules/CompanionSprite"
 import { PixelArtSprite } from "@/components/molecules/PixelArtSprite"
 import { MoodBar } from "@/components/molecules/MoodBar"
@@ -14,11 +13,11 @@ export interface CompanionWidgetProps {
 }
 
 function CompanionWidget({ mood, streak, hoursUntilBreak, pixelArtSrc }: CompanionWidgetProps) {
-  const [animating, setAnimating] = React.useState(false)
+  const [animationEndedForMood, setAnimationEndedForMood] = React.useState<number | null>(null)
+  const animating = animationEndedForMood !== mood
 
   React.useEffect(() => {
-    setAnimating(true)
-    const timer = setTimeout(() => setAnimating(false), 1000)
+    const timer = setTimeout(() => setAnimationEndedForMood(mood), 1000)
     return () => clearTimeout(timer)
   }, [mood])
 

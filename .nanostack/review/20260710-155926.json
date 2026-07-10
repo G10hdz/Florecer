@@ -1,0 +1,40 @@
+{
+  "phase": "review",
+  "mode": "standard",
+  "summary": "Two-pass review completed: 2 mechanical findings auto-fixed, 0 blocking, 0 ask.",
+  "scope_drift": {
+    "status": "informational",
+    "reason": "Toast/context extraction required updating additional import consumers; api-client gained a compatibility flag to keep auth initialization render-pure."
+  },
+  "findings": [
+    {
+      "severity": "should_fix",
+      "resolution": "auto_fixed",
+      "detail": "Prevent malformed stored auth data from triggering navigation during React state initialization."
+    },
+    {
+      "severity": "should_fix",
+      "resolution": "auto_fixed",
+      "detail": "Key deposit modal content so changed defaults still reset the form while open."
+    }
+  ],
+  "conflicts": [],
+  "context_checkpoint": {
+    "summary": "Fast Refresh exports are isolated, derived state replaces synchronous effect state, public UI barrel exports remain available, lint/build/tests pass before final verification.",
+    "key_files": [
+      "frontend/src/contexts/AuthContext.tsx",
+      "frontend/src/components/organisms/DepositModal.tsx",
+      "frontend/src/components/pages/DashboardPage.tsx",
+      "frontend/src/lib/toast.ts"
+    ],
+    "decisions_made": [
+      "Keep visual behavior stable",
+      "Do not suppress ESLint rules"
+    ],
+    "open_questions": []
+  },
+  "timestamp": "2026-07-10T15:59:26Z",
+  "project": "/Users/gio/projects/G10hdz/Florecer",
+  "branch": "G10hdz/feat/bff-and-frontend-wiring",
+  "integrity": "25443d33be4f1dd0907a585fc1690bde0054b1767cade8a0ba156a55fb5a8de7"
+}

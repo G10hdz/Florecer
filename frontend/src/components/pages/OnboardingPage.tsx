@@ -2,7 +2,7 @@ import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { useToast } from "@/components/ui/Toast"
+import { useToast } from "@/lib/toast"
 import { setFireflyPat } from "@/services/account"
 import { createGoal } from "@/services/goals"
 

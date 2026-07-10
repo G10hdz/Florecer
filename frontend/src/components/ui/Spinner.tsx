@@ -1,22 +1,7 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import type { VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-
-const spinnerVariants = cva(
-  "animate-spin",
-  {
-    variants: {
-      size: {
-        sm: "h-4 w-4",
-        md: "h-6 w-6",
-        lg: "h-8 w-8",
-      },
-    },
-    defaultVariants: {
-      size: "md",
-    },
-  }
-)
+import { spinnerVariants } from "@/lib/spinner-variants"
 
 export interface SpinnerProps
   extends React.HTMLAttributes<HTMLDivElement>,
@@ -52,4 +37,4 @@ function Spinner({ className, size, ...props }: SpinnerProps) {
   )
 }
 
-export { Spinner, spinnerVariants }
+export { Spinner }

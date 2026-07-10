@@ -2,11 +2,9 @@ import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { ShareCard } from "@/components/organisms"
 import { Button } from "@/components/ui/Button"
-import { useToast } from "@/components/ui/Toast"
 
 function ShareCardPage() {
   const navigate = useNavigate()
-  const { addToast } = useToast()
 
   // TODO(v2): backed by /avatar + /share endpoints.
   const shareData = {

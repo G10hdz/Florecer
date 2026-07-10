@@ -16,7 +16,7 @@
  */
 import * as React from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useToast } from "@/components/ui/Toast"
+import { useToast } from "@/lib/toast"
 import { VisionBoard } from "@/components/organisms/VisionBoard"
 import { VisionGrid } from "@/components/organisms/VisionGrid"
 import { ImpulseSwap } from "@/components/organisms/ImpulseSwap"
@@ -34,61 +34,12 @@ import { logDeposit } from "@/services/transactions"
 import type { Goal } from "@/types/api"
 import { cn } from "@/lib/utils"
 import { getGoalIconUrlByName } from "@/lib/pixel-art-assets"
+import { selectDashboardState } from "./dashboard-state"
 import heroImage from "@/assets/hero.png"
 
 const goalEmojis = ["🎯", "💻", "📱", "🎙️", "🏠", "✈️", "🚲", "📚"]
 
-type DashboardQueryState = {
-  isError: boolean
-  isPending: boolean
-  isSuccess: boolean
-  // react-query pauses a query (fetchStatus 'paused', status stays 'pending')
-  // when the BFF is unreachable; treat that as an error so the UI never spins
-  // forever. Optional so it defaults to "not paused" for older callers/tests.
-  isPaused?: boolean
-}
-
-type DashboardGoalsQueryState = DashboardQueryState & {
-  data?: { goals: unknown[] }
-}
-
-type DashboardStateQueries = {
-  goalsQuery: DashboardGoalsQueryState
-  summaryQuery: DashboardQueryState
-  companionQuery: DashboardQueryState
-  milestonesQuery: DashboardQueryState
-}
-
-type DashboardRenderState = "error" | "pending" | "empty" | "ready"
-
-function selectDashboardState({
-  goalsQuery,
-  summaryQuery,
-  companionQuery,
-  milestonesQuery,
-}: DashboardStateQueries): DashboardRenderState {
-  if (goalsQuery.isError || summaryQuery.isError || companionQuery.isError || milestonesQuery.isError) {
-    return "error"
-  }
-
-  // A paused query means the BFF couldn't be reached — surface it as an error
-  // rather than an indefinite loading spinner.
-  if (goalsQuery.isPaused || summaryQuery.isPaused || companionQuery.isPaused || milestonesQuery.isPaused) {
-    return "error"
-  }
-
-  if (goalsQuery.isPending || summaryQuery.isPending || companionQuery.isPending || milestonesQuery.isPending) {
-    return "pending"
-  }
-
-  if (goalsQuery.isSuccess && goalsQuery.data?.goals.length === 0) {
-    return "empty"
-  }
-
-  return "ready"
-}
-
-function goalToVisionGoal(goal: Goal, index: number): VisionGoal {
+function goalToVisionGoal(goal: Goal, index: number, nowMs: number): VisionGoal {
   return {
     goal_id: goal.goal_id,
     name: goal.name,
@@ -97,15 +48,15 @@ function goalToVisionGoal(goal: Goal, index: number): VisionGoal {
     target_amount: goal.target_amount,
     currency: goal.currency,
     vision_image_url: heroImage,
-    priority: getPriority(goal),
+    priority: getPriority(goal, nowMs),
     emoji: goalEmojis[index % goalEmojis.length],
     goal_icon_url: getGoalIconUrlByName(goal.name),
   }
 }
 
-function getPriority(goal: Goal): VisionGoal["priority"] {
+function getPriority(goal: Goal, nowMs: number): VisionGoal["priority"] {
   const daysUntilDeadline = Math.ceil(
-    (new Date(goal.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    (new Date(goal.deadline).getTime() - nowMs) / (1000 * 60 * 60 * 24)
   )
   if (goal.progress_percent >= 100) return "future"
   if (daysUntilDeadline <= 30) return "urgent"
@@ -124,6 +75,7 @@ function DashboardPage() {
   const [depositOpen, setDepositOpen] = React.useState(false)
   const [depositDefaults, setDepositDefaults] = React.useState<{ amount?: number; note?: string }>({})
   const [celebrationId, setCelebrationId] = React.useState(0)
+  const [renderedAt] = React.useState(() => Date.now())
 
   const goalsQuery = useQuery({
     queryKey: ["goals"],
@@ -143,18 +95,9 @@ function DashboardPage() {
   })
 
   const goals = React.useMemo(
-    () => goalsQuery.data?.goals.map(goalToVisionGoal) ?? [],
-    [goalsQuery.data]
+    () => goalsQuery.data?.goals.map((goal, index) => goalToVisionGoal(goal, index, renderedAt)) ?? [],
+    [goalsQuery.data, renderedAt]
   )
-
-  React.useEffect(() => {
-    if (!focusedGoalId && goals[0]) {
-      setFocusedGoalId(goals[0].goal_id)
-    }
-    if (focusedGoalId && goals.length > 0 && !goals.some((goal) => goal.goal_id === focusedGoalId)) {
-      setFocusedGoalId(goals[0].goal_id)
-    }
-  }, [focusedGoalId, goals])
 
   const focusedGoal = goals.find((g) => g.goal_id === focusedGoalId) ?? goals[0]
 
@@ -214,7 +157,7 @@ function DashboardPage() {
   }
 
   const daysUntilDeadline = focusedGoal
-    ? Math.ceil((new Date(goalsQuery.data?.goals.find((goal) => goal.goal_id === focusedGoal.goal_id)?.deadline ?? "").getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    ? Math.ceil((new Date(goalsQuery.data?.goals.find((goal) => goal.goal_id === focusedGoal.goal_id)?.deadline ?? "").getTime() - renderedAt) / (1000 * 60 * 60 * 24))
     : 0
 
   if (dashboardState === "error") {
@@ -508,4 +451,4 @@ function DashboardPage() {
   )
 }
 
-export { DashboardPage, selectDashboardState }
+export { DashboardPage }

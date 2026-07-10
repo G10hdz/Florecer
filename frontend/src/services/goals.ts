@@ -4,7 +4,6 @@ import type {
   GoalCreatePayload,
   GoalListResponse,
   GamificationSummary,
-  MilestoneStatus,
   MilestoneListResponse,
 } from "@/types/api"
 

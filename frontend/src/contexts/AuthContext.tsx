@@ -3,32 +3,16 @@ import { useNavigate } from "react-router-dom"
 import { clearStoredAuth, getStoredAuthToken, getStoredAuthUser, setStoredAuth } from "@/services/api-client"
 import { login as loginRequest, register as registerRequest } from "@/services/auth"
 import type { User } from "@/types/api"
+import { AuthContext, useAuth } from "./auth-context-value"
 
-interface AuthContextType {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  error: string | null
-  login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string) => Promise<void>
-  logout: () => void
+function getInitialUser(): User | null {
+  return getStoredAuthToken() ? getStoredAuthUser<User>(false) : null
 }
 
-const AuthContext = React.createContext<AuthContextType | null>(null)
-
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<User | null>(null)
-  const [isLoading, setIsLoading] = React.useState(true)
+  const [user, setUser] = React.useState<User | null>(getInitialUser)
   const [error, setError] = React.useState<string | null>(null)
-
-  React.useEffect(() => {
-    const storedToken = getStoredAuthToken()
-    const storedUser = getStoredAuthUser<User>()
-    if (storedToken && storedUser) {
-      setUser(storedUser)
-    }
-    setIsLoading(false)
-  }, [])
+  const isLoading = false
 
   const login = async (email: string, password: string) => {
     setError(null)
@@ -78,14 +62,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-function useAuth() {
-  const context = React.useContext(AuthContext)
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
-}
-
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
@@ -111,4 +87,4 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-export { AuthProvider, useAuth, AuthGuard }
+export { AuthProvider, AuthGuard }

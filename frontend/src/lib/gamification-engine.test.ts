@@ -18,10 +18,8 @@ import {
   computeGamificationState,
   TIERS,
   COSMETIC_CATALOG,
-  STREAK_MULTIPLIERS,
-  STREAK_MILESTONES,
 } from "./gamification-engine"
-import type { Goal, GamificationInput, Transaction } from "./gamification-engine"
+import type { Goal, GamificationInput } from "./gamification-engine"
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
@@ -33,15 +31,6 @@ function makeGoal(overrides: Partial<Goal> = {}): Goal {
     target_amount: 1000,
     current_amount: 0,
     progress_percent: 0,
-    ...overrides,
-  }
-}
-
-function makeTransaction(overrides: Partial<Transaction> = {}): Transaction {
-  return {
-    id: "t1",
-    amount: 100,
-    created_at: "2024-01-01T00:00:00Z",
     ...overrides,
   }
 }

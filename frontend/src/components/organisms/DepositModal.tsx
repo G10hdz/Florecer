@@ -1,8 +1,7 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { useToast } from "@/components/ui/Toast"
+import { useToast } from "@/lib/toast"
 import { logDeposit } from "@/services/transactions"
 
 export interface DepositModalProps {
@@ -15,17 +14,31 @@ export interface DepositModalProps {
 }
 
 function DepositModal({ open, onClose, onSubmit, currency, defaultAmount, defaultNote }: DepositModalProps) {
-  const [amount, setAmount] = React.useState("")
-  const [note, setNote] = React.useState("")
+  if (!open) return null
+
+  return (
+    <DepositModalContent
+      key={`${defaultAmount ?? ""}:${defaultNote ?? ""}`}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      currency={currency}
+      defaultAmount={defaultAmount}
+      defaultNote={defaultNote}
+    />
+  )
+}
+
+function DepositModalContent({
+  onClose,
+  onSubmit,
+  currency,
+  defaultAmount,
+  defaultNote,
+}: Omit<DepositModalProps, "open">) {
+  const [amount, setAmount] = React.useState(() => defaultAmount ? String(defaultAmount) : "")
+  const [note, setNote] = React.useState(() => defaultNote || "")
   const [submitting, setSubmitting] = React.useState(false)
   const { addToast } = useToast()
-
-  React.useEffect(() => {
-    if (open) {
-      setAmount(defaultAmount ? String(defaultAmount) : "")
-      setNote(defaultNote || "")
-    }
-  }, [open, defaultAmount, defaultNote])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,8 +71,6 @@ function DepositModal({ open, onClose, onSubmit, currency, defaultAmount, defaul
       setSubmitting(false)
     }
   }
-
-  if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">

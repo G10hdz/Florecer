@@ -114,7 +114,7 @@ export function setStoredAuth(token: string, user: unknown): void {
   window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
 }
 
-export function getStoredAuthUser<T>(): T | null {
+export function getStoredAuthUser<T>(clearInvalid = true): T | null {
   if (typeof window === "undefined") return null
   const storedUser = window.localStorage.getItem(AUTH_USER_KEY)
   if (!storedUser) return null
@@ -122,7 +122,7 @@ export function getStoredAuthUser<T>(): T | null {
   try {
     return JSON.parse(storedUser) as T
   } catch {
-    clearStoredAuth()
+    if (clearInvalid) clearStoredAuth()
     return null
   }
 }

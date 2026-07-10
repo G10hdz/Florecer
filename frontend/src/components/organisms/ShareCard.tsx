@@ -1,7 +1,6 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
-import { useToast } from "@/components/ui/Toast"
+import { useToast } from "@/lib/toast"
 
 export interface ShareCardProps {
   shareUrl: string

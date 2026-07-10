@@ -2,7 +2,7 @@ import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { AvatarPreview, CosmeticGrid } from "@/components/organisms"
 import { Button } from "@/components/ui/Button"
-import { useToast } from "@/components/ui/Toast"
+import { useToast } from "@/lib/toast"
 
 function WardrobePage() {
   const navigate = useNavigate()

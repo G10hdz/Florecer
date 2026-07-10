@@ -1,0 +1,50 @@
+{
+  "phase": "plan",
+  "summary": {
+    "objective": "Resolve all 29 frontend ESLint errors without visible behavior changes",
+    "planned_files": [
+      "frontend/src/components/molecules/CompanionSprite.tsx",
+      "frontend/src/components/molecules/XPBar.tsx",
+      "frontend/src/components/organisms/CompanionWidget.tsx",
+      "frontend/src/components/organisms/DepositModal.tsx",
+      "frontend/src/components/organisms/GoalCard.tsx",
+      "frontend/src/components/organisms/ImpulseSwap.tsx",
+      "frontend/src/components/organisms/MilestoneTrack.tsx",
+      "frontend/src/components/organisms/ShareCard.tsx",
+      "frontend/src/components/pages/DashboardPage.tsx",
+      "frontend/src/components/pages/DashboardPage.test.tsx",
+      "frontend/src/components/pages/PixelArtStudioPage.tsx",
+      "frontend/src/components/pages/ShareCardPage.tsx",
+      "frontend/src/components/ui/Badge.tsx",
+      "frontend/src/components/ui/Button.tsx",
+      "frontend/src/components/ui/Spinner.tsx",
+      "frontend/src/components/ui/Toast.tsx",
+      "frontend/src/contexts/AuthContext.tsx",
+      "frontend/src/lib/gamification-engine.test.ts",
+      "frontend/src/services/goals.ts",
+      "frontend/src/lib/badge-variants.ts",
+      "frontend/src/lib/spinner-variants.ts",
+      "frontend/src/lib/toast.ts",
+      "frontend/src/lib/impulse-categories.ts",
+      "frontend/src/contexts/auth-context-value.ts",
+      "frontend/src/components/pages/dashboard-state.ts"
+    ]
+  },
+  "context_checkpoint": {
+    "summary": "Build and 72 tests currently pass; lint has 29 errors across unused symbols, Fast Refresh boundaries, synchronous effect state, and render purity.",
+    "key_files": [
+      "frontend/eslint.config.js",
+      "frontend/src/components/pages/DashboardPage.tsx",
+      "frontend/src/contexts/AuthContext.tsx"
+    ],
+    "decisions_made": [
+      "Fix causes rather than suppress rules",
+      "Reuse existing frontend/src/lib/button-variants.ts"
+    ],
+    "open_questions": []
+  },
+  "timestamp": "2026-07-10T15:52:17Z",
+  "project": "/Users/gio/projects/G10hdz/Florecer",
+  "branch": "G10hdz/feat/bff-and-frontend-wiring",
+  "integrity": "e206a913f3f0a578e9b536d1d222c0f04dfbc62d75d210ea5291da570de81aa1"
+}

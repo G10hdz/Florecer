@@ -2,8 +2,8 @@ import * as React from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { useToast } from "@/components/ui/Toast"
-import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/lib/toast"
+import { useAuth } from "@/contexts/auth-context-value"
 
 function RegisterPage() {
   const navigate = useNavigate()
