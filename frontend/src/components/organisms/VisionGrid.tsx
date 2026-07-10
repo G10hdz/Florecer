@@ -18,6 +18,7 @@ export interface VisionGoal {
   vision_image_url: string
   priority: "urgent" | "soon" | "future" | "dream"
   emoji: string
+  goal_icon_url?: string
 }
 
 export interface VisionGridProps {
@@ -98,7 +99,13 @@ function VisionGrid({ goals, focusedGoalId, onFocus, className }: VisionGridProp
                 {/* Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-base">{goal.emoji}</span>
+                    {goal.goal_icon_url && (
+                      <img
+                        src={goal.goal_icon_url}
+                        alt=""
+                        className="pixelart w-6 h-6 shrink-0 object-contain drop-shadow"
+                      />
+                    )}
                     <span className="text-white text-xs font-semibold truncate">
                       {goal.name}
                     </span>

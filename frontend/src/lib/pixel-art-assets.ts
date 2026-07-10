@@ -329,3 +329,34 @@ export function getGoalIconUrl(goalType: string): string {
   }
   return getPixelAssetUrl(mapping[goalType] || mapping.default)
 }
+
+/**
+ * Resolve a goal icon by matching keywords in the goal name (case- and
+ * accent-insensitive) against the 14 pixel-art sprites shipped under
+ * /assets/pixelart/goals/. Falls back to coin_stack.png for anything
+ * without a dedicated icon (laptop, moto, etc.).
+ */
+export function getGoalIconUrlByName(goalName: string): string {
+  const normalized = goalName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+
+  const rules: Array<{ keywords: string[]; file: string }> = [
+    { keywords: ["ia", "ai", "inteligencia", "cerebro", "brain"], file: "ai_brain.png" },
+    { keywords: ["curso", "estudio", "libro", "escuela", "universidad"], file: "book_open.png" },
+    { keywords: ["musica", "guitarra", "violin", "concierto", "mic"], file: "music_violin.png" },
+    { keywords: ["viaje", "sueno", "futuro", "telescopio"], file: "telescope.png" },
+    { keywords: ["emergencia", "fondo"], file: "money_purse.png" },
+    { keywords: ["inversion", "startup", "negocio"], file: "coin_crown.png" },
+    { keywords: ["joya", "gema", "anillo"], file: "gems.png" },
+    { keywords: ["planta", "jardin"], file: "plant_pot_3.png" },
+  ]
+
+  for (const rule of rules) {
+    if (rule.keywords.some((keyword) => new RegExp(`\\b${keyword}\\b`).test(normalized))) {
+      return `/assets/pixelart/goals/${rule.file}`
+    }
+  }
+  return `/assets/pixelart/goals/coin_stack.png`
+}

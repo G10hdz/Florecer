@@ -25,6 +25,7 @@ import { DepositModal } from "@/components/organisms/DepositModal"
 import { MilestoneTrack } from "@/components/organisms/MilestoneTrack"
 import { CelebrationBurst } from "@/components/molecules/CelebrationBurst"
 import { StreakBadge } from "@/components/molecules/StreakBadge"
+import { PixelArtSprite } from "@/components/molecules/PixelArtSprite"
 import { Button } from "@/components/ui/Button"
 import type { VisionGoal } from "@/components/organisms/VisionGrid"
 import { getCompanion } from "@/services/account"
@@ -32,6 +33,7 @@ import { getGamificationSummary, getMilestones, listGoals } from "@/services/goa
 import { logDeposit } from "@/services/transactions"
 import type { Goal } from "@/types/api"
 import { cn } from "@/lib/utils"
+import { getGoalIconUrlByName } from "@/lib/pixel-art-assets"
 import heroImage from "@/assets/hero.png"
 
 const goalEmojis = ["🎯", "💻", "📱", "🎙️", "🏠", "✈️", "🚲", "📚"]
@@ -97,6 +99,7 @@ function goalToVisionGoal(goal: Goal, index: number): VisionGoal {
     vision_image_url: heroImage,
     priority: getPriority(goal),
     emoji: goalEmojis[index % goalEmojis.length],
+    goal_icon_url: getGoalIconUrlByName(goal.name),
   }
 }
 
@@ -346,8 +349,13 @@ function DashboardPage() {
         {/* Focused Goal — Big Vision Board */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-foreground">
-              🎯 Enfoque actual
+            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <PixelArtSprite
+                src={getGoalIconUrlByName(focusedGoal.name)}
+                alt={focusedGoal.name}
+                size="sm"
+              />
+              Enfoque actual
             </h3>
             <span className={cn(
               "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
@@ -414,7 +422,11 @@ function DashboardPage() {
         {/* Impulse Swap — Targeted to Focused Goal */}
         <div className="bg-surface rounded-2xl border-2 border-border p-5 shadow-lg">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">{focusedGoal.emoji}</span>
+            <PixelArtSprite
+              src={getGoalIconUrlByName(focusedGoal.name)}
+              alt={focusedGoal.name}
+              size="sm"
+            />
             <div>
               <h3 className="text-lg font-bold text-foreground">
                 💡 Impulso de hoy
